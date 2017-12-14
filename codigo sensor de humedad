@@ -1,0 +1,50 @@
+
+#define analogico 4   //pin analogico
+#define AC1 2       //pin de salida
+#define AC2 3       //pin de salida
+
+int medir_suelo(){                //lo que hago es sensar la resistencia/capacitancia entre una resistencia y el propio sensor,en una polaridad y despues la invierto
+  int lectura=0;
+
+  digitalWrite(AC1,HIGH);         //genero circulacion de corriente en un sentido
+  digitalWrite(AC2,LOW);
+
+  delay(100);                     //espero a que se estabilice , originalmente es 1000ms pero me parece mucho
+
+  lectura=analogRead(analogico);      // caida detension en el sensor
+
+  digitalWrite(AC1,LOW);          //invierto la polaridad
+  digitalWrite(AC2,HIGH);
+
+  delay(100);
+                                         //caida de tension en la resistencia,le resto a la caida total y deberia coincidir con la primer lectura
+  lectura+=1024 - analogRead(analogico); // sumo a la primera para despues dividirla en 2 y hacer un promedio, en el codigo original solo mide en una polaridad
+
+  digitalWrite(AC2,LOW);
+
+  return lectura/2;
+
+}
+
+
+void setup() {
+ 
+  pinMode(AC1,OUTPUT);
+  pinMode(AC2,OUTPUT);
+
+  Serial.begin(115200);
+}
+
+void loop() {
+
+  float medida=0.00;
+
+  medida= (medir_suelo() * 100) / 1024;             //calculo el porcentaje de humedad
+
+  Serial.print("La humedad actual es:");
+  Serial.print(medida);
+  Serial.print("%  ");
+
+  delay(3000);
+
+}
